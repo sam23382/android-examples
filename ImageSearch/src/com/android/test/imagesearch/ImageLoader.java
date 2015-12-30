@@ -28,6 +28,7 @@ public class ImageLoader {
 	private ExecutorService mExecutorService;
 	private Handler mHandler = new Handler();
 	final int defaultImageId = R.drawable.default_image;
+	final int noImageFoundId = R.drawable.no_image_found;
 
 	public ImageLoader(Context context) {
 		mFileCache = new FileCache(context);
@@ -41,10 +42,14 @@ public class ImageLoader {
 		if (bitmap != null) {
 			imageView.setImageBitmap(bitmap);
 		} else {
-			if (url != "") {
-				queueImage(url, imageView);
+			if (url == "NA") {
+				imageView.setImageResource(noImageFoundId);
+			} else {
+				if (url != "") {
+					queueImage(url, imageView);
+				}
+				imageView.setImageResource(defaultImageId);
 			}
-			imageView.setImageResource(defaultImageId);
 		}
 	}
 

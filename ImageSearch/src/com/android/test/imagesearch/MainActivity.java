@@ -3,8 +3,10 @@ package com.android.test.imagesearch;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,6 +17,7 @@ import android.os.Bundle;
 import android.app.Activity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.Toast;
@@ -48,9 +51,17 @@ public class MainActivity extends Activity {
 					if (mSearchTask != null && !mSearchTask.isCancelled()) {
 						mSearchTask.cancel(true);
 					}
+					String param = s.toString();
+					try {
+						param = URLEncoder.encode(s.toString(), "utf-8");
+						param = param.replaceAll("\\+", "%20");
+					} catch (UnsupportedEncodingException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					mSearchTask = null;
 					mSearchTask = new SearchTask();
-					mSearchTask.execute(mServerURL + s.toString());
+					mSearchTask.execute(mServerURL + param);
 				} else {
 					mGridView.setAdapter(null);
 					clearImagePaths();
@@ -135,14 +146,20 @@ public class MainActivity extends Activity {
 		protected void onPostExecute(Void unused) {
 			if (Error == null) {
 				try {
+					clearImagePaths();
+
 					// Parsing JSON response
-					JSONObject query = new JSONObject(Content).getJSONObject("query");
+					JSONObject content = new JSONObject(Content);
+					if (content.optString("query") == "")
+						return;
+
+					JSONObject query = content.getJSONObject("query");
 					JSONObject pages = query.optJSONObject("pages");
 					JSONArray pageKeys = pages.names();
 
 					for (int i = 0; i < pageKeys.length(); i++) {
 						JSONObject page = pages.getJSONObject(pageKeys.getString(i));
-						String imagePath = "";
+						String imagePath = "NA";
 						int index = 0;
 						if (page.optString("title") != "" && page.optInt("index") != 0) {
 							index = page.optInt("index");
@@ -155,13 +172,13 @@ public class MainActivity extends Activity {
 							mImagePaths[index - 1] = imagePath;
 						}
 					}
-					mImageLoadAdapter.imageLoader.clearCache();
-					mImageLoadAdapter.notifyDataSetChanged();
 				} catch (JSONException e) {
 					e.printStackTrace();
+				} finally {
+					mImageLoadAdapter.imageLoader.clearCache();
+					mImageLoadAdapter.notifyDataSetChanged();
 				}
 			}
 		}
-
 	}
 }
