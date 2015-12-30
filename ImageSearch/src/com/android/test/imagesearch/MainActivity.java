@@ -7,6 +7,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,14 +19,13 @@ import android.os.Bundle;
 import android.app.Activity;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
-	private String[] mImagePaths = new String[50];
+	private List<String> mImagePaths = new ArrayList<String>();
 	private GridView mGridView;
 	private ImageAdapter mImageLoadAdapter;
 	private String mServerURL = "https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&piprop=thumbnail&pithumbsize=50&pilimit=50&generator=prefixsearch&gpslimit=50&gpssearch=";
@@ -47,7 +48,6 @@ public class MainActivity extends Activity {
 					if (mGridView.getAdapter() == null) {
 						mGridView.setAdapter(mImageLoadAdapter);
 					}
-
 					if (mSearchTask != null && !mSearchTask.isCancelled()) {
 						mSearchTask.cancel(true);
 					}
@@ -82,9 +82,7 @@ public class MainActivity extends Activity {
 	}
 
 	private void clearImagePaths() {
-		for (int i = 0; i < mImagePaths.length; i++) {
-			mImagePaths[i] = "";
-		}
+		mImagePaths.clear();
 	}
 
 	@Override
@@ -94,7 +92,7 @@ public class MainActivity extends Activity {
 	}
 
 	public void onItemClick(int mPosition) {
-		String imageURL = mImagePaths[mPosition];
+		String imageURL = mImagePaths.get(mPosition);
 		Toast.makeText(MainActivity.this, "Image URL : " + imageURL, Toast.LENGTH_LONG).show();
 	}
 
@@ -157,6 +155,7 @@ public class MainActivity extends Activity {
 					JSONObject pages = query.optJSONObject("pages");
 					JSONArray pageKeys = pages.names();
 
+					String[] imagePaths = new String[pageKeys.length()];
 					for (int i = 0; i < pageKeys.length(); i++) {
 						JSONObject page = pages.getJSONObject(pageKeys.getString(i));
 						String imagePath = "NA";
@@ -169,9 +168,14 @@ public class MainActivity extends Activity {
 									imagePath = image.optString("source");
 								}
 							}
-							mImagePaths[index - 1] = imagePath;
+							imagePaths[index - 1] = imagePath;
 						}
 					}
+
+					for (int i = 0; i < imagePaths.length; i++) {
+						mImagePaths.add(i, imagePaths[i]);
+					}
+
 				} catch (JSONException e) {
 					e.printStackTrace();
 				} finally {

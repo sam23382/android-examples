@@ -1,5 +1,6 @@
 package com.android.test.imagesearch;
 
+import java.util.List;
 import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -12,11 +13,11 @@ import android.widget.ImageView;
 public class ImageAdapter extends BaseAdapter implements OnClickListener {
 
 	private Activity mActivity;
-	private String[] mData;
+	private List<String> mData;
 	private static LayoutInflater sInflater = null;
 	public ImageLoader imageLoader;
 
-	public ImageAdapter(Activity a, String[] d) {
+	public ImageAdapter(Activity a, List<String> d) {
 		mActivity = a;
 		mData = d;
 		sInflater = (LayoutInflater) mActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -24,7 +25,7 @@ public class ImageAdapter extends BaseAdapter implements OnClickListener {
 	}
 
 	public int getCount() {
-		return mData.length;
+		return mData.size();
 	}
 
 	public Object getItem(int position) {
@@ -56,7 +57,7 @@ public class ImageAdapter extends BaseAdapter implements OnClickListener {
 
 		ImageView image = holder.image;
 
-		imageLoader.DisplayImage(mData[position], image);
+		imageLoader.DisplayImage(mData.get(position), image);
 
 		vi.setOnClickListener(new OnItemClickListener(position));
 		return vi;
